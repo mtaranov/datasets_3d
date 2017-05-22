@@ -1,0 +1,1 @@
+/users/mtaranov/local/anaconda2/bin/python /users/mtaranov/datasets_3d/get_data_labels-w_indx.py /mnt/lab_data/kundaje/mtaranov/ChicagoCalls/D0_D2D8_merge_BaitToBait_and_BaitToE_intra.bed.gz /mnt/lab_data/kundaje/mtaranov/ChicagoCalls/PE_Digest_Human_HindIII_ID.bed /users/mtaranov/datasets_3d/dist_matched_PP_PE /mnt/lab_data/kundaje/mtaranov/peaks_at_pe/output_thres5_max/
