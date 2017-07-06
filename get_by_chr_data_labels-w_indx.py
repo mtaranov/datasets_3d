@@ -19,7 +19,7 @@ import networkx as nx
 
 from utils_data_process import printMatrix, set_diag_to_value, binarize, binarize_w_unlabeled, demean, zscore
 from utils_data_process import shuffle_nodes, train_vali_test, build_distance_for_node, BuildMatrix, get_features
-from utils_data_process import get_data_labels, remove_unlabeled, concatenate_chrs, get_pairs_distance_matched, impose_dist_constrains, count_nodes_and_contacts
+from utils_data_process import get_data_labels, remove_unlabeled, concatenate_chrs, get_pairs_distance_matched, impose_dist_constrains, count_nodes_and_contacts, train_vali_test_by_chr
 
 InteractionsFileCaptureC=sys.argv[1]
 hindIII_file=sys.argv[2]
@@ -68,9 +68,21 @@ for chr in VectorATAC:
         FeatureVector[chr] = np.concatenate((FeatureVector_wo_dist[chr], distance_for_node[chr]), axis=1)
 
 data, labels, indx  = get_data_labels(FeatureVector, labels_score)
-data_all_chrs, labels_all_chrs, indx_all_chr = concatenate_chrs(data, labels, indx)
-data_all_wo_unlbd_at_thres, labels_all_wo_unlbd_at_thres, indx_all_wo_unlbd_at_thres = remove_unlabeled(data_all_chrs, binarize_w_unlabeled(labels_all_chrs, int(thres)), indx_all_chr)
-train_set_thres, vali_set_thres, test_set_thres, labels_train_thres, labels_vali_thres, labels_test_thres, indx_train_thres, indx_vali_thres, indx_test_thres =train_vali_test(data_all_wo_unlbd_at_thres, labels_all_wo_unlbd_at_thres, indx_all_wo_unlbd_at_thres, 0.5, 0.3)
+data_wo_unlbd_at_thres={}
+labels_wo_unlbd_at_thres={}
+indx_wo_unlbd_at_thres={}
+for chr in data:
+    data_wo_unlbd_at_thres[chr], labels_wo_unlbd_at_thres[chr], indx_wo_unlbd_at_thres[chr]= remove_unlabeled(data[chr], binarize_w_unlabeled(labels[chr], int(thres)), indx[chr])
+#test_chrs=['chr1', 'chr2', 'chr3']
+#vali_chrs=['chr9', 'chr10', 'chr11', 'chr12', 'chr13', 'chr14', 'chr15']
+test_chrs=['chr9', 'chr11', 'chr13']
+vali_chrs=['chr10', 'chr12', 'chr14', 'chr15']
+train_set_thres, vali_set_thres, test_set_thres, labels_train_thres, labels_vali_thres, labels_test_thres, indx_train_thres, indx_vali_thres, indx_test_thres = train_vali_test_by_chr(data_wo_unlbd_at_thres, labels_wo_unlbd_at_thres, indx_wo_unlbd_at_thres, test_chrs, vali_chrs)
+
+
+#data_all_chrs, labels_all_chrs, indx_all_chr = concatenate_chrs(data, labels, indx)
+#data_all_wo_unlbd_at_thres, labels_all_wo_unlbd_at_thres, indx_all_wo_unlbd_at_thres = remove_unlabeled(data_all_chrs, binarize_w_unlabeled(labels_all_chrs, int(thres)), indx_all_chr)
+#train_set_thres, vali_set_thres, test_set_thres, labels_train_thres, labels_vali_thres, labels_test_thres, indx_train_thres, indx_vali_thres, indx_test_thres =train_vali_test(data_all_wo_unlbd_at_thres, labels_all_wo_unlbd_at_thres, indx_all_wo_unlbd_at_thres, 0.5, 0.3)
 
 min_dist=10000
 max_dist=2000000

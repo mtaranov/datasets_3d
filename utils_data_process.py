@@ -101,6 +101,42 @@ def train_vali_test(data_3d, labels_1d, indx_1d, trainProportion, valiProportion
     #print "Train by train:", np.shape(train_by_train), "Test by train:", np.shape(test_by_train), "Test by test:", np.shape(test_by_test), "All by train:", np.shape(all_by_train), "All by all:", np.shape(all_by_all) 
     return train_set, vali_set, test_set, labels_train, labels_vali, labels_test, indx_train, indx_vali, indx_test
 
+def train_vali_test_by_chr(data_wo_unlbd_at_thres, labels_wo_unlbd_at_thres, indx_wo_unlbd_at_thres, test_chrs, vali_chrs):
+    train_chrs=['chr'+str(i+1) for i in range(22)]
+    train_chrs.append('chrX')
+    for i in test_chrs+vali_chrs:
+        train_chrs.remove(i)
+
+    test_data_dict = {}
+    test_labels_dict = {}
+    test_indx_dict = {}
+    for chr in test_chrs:
+        test_data_dict.update({chr:data_wo_unlbd_at_thres[chr]})
+        test_labels_dict.update({chr:labels_wo_unlbd_at_thres[chr]})
+        test_indx_dict.update({chr:indx_wo_unlbd_at_thres[chr]})
+    test_set_thres, labels_test_thres, indx_test_thres = concatenate_chrs(test_data_dict, test_labels_dict, test_indx_dict)
+    
+    vali_data_dict = {}
+    vali_labels_dict = {}
+    vali_indx_dict = {}
+    for chr in vali_chrs:
+        vali_data_dict.update({chr:data_wo_unlbd_at_thres[chr]})
+        vali_labels_dict.update({chr:labels_wo_unlbd_at_thres[chr]})
+        vali_indx_dict.update({chr:indx_wo_unlbd_at_thres[chr]})
+    vali_set_thres, labels_vali_thres, indx_vali_thres = concatenate_chrs(vali_data_dict, vali_labels_dict, vali_indx_dict)
+
+
+    train_data_dict = {}
+    train_labels_dict = {}
+    train_indx_dict = {}
+    for chr in train_chrs:
+        train_data_dict.update({chr:data_wo_unlbd_at_thres[chr]})
+        train_labels_dict.update({chr:labels_wo_unlbd_at_thres[chr]})
+        train_indx_dict.update({chr:indx_wo_unlbd_at_thres[chr]})
+    train_set_thres, labels_train_thres, indx_train_thres = concatenate_chrs(train_data_dict, train_labels_dict, train_indx_dict)
+
+    return train_set_thres, vali_set_thres, test_set_thres, labels_train_thres, labels_vali_thres, labels_test_thres, indx_train_thres, indx_vali_thres, indx_test_thres
+
 def build_distance_for_node(PromoterFile): 
     REFrag_dict={}
     # Assign indices to all promoter HindIII sites.
@@ -297,11 +333,13 @@ def get_pairs_distance_matched(X, y, indx, min_dist, max_dist, dist_step, imbala
     X_new=np.empty(([0,X.shape[1],X.shape[2]]))
     y_new=np.empty(([0,y.shape[1]]))
     indx_new=np.empty(([0,indx.shape[1]]))
-    
+
+
+    f_num=X.shape[1]-1    
     while thres1 <= max_dist:
         print 'distance window: ', '[', thres2, ',', thres1, ']'
-        neg_indx_at_dist=np.where((abs(X_neg[:, 10, 0] - X_neg[:, 10, 1]) <= thres1) & (abs(X_neg[:, 10, 0] - X_neg[:, 10, 1]) >= thres2))
-        pos_indx_at_dist=np.where((abs(X_pos[:, 10, 0] - X_pos[:, 10, 1]) <= thres1) & (abs(X_pos[:, 10, 0] - X_pos[:, 10, 1]) >= thres2))
+        neg_indx_at_dist=np.where((abs(X_neg[:, f_num, 0] - X_neg[:, f_num, 1]) <= thres1) & (abs(X_neg[:, f_num, 0] - X_neg[:, f_num, 1]) >= thres2))
+        pos_indx_at_dist=np.where((abs(X_pos[:, f_num, 0] - X_pos[:, f_num, 1]) <= thres1) & (abs(X_pos[:, f_num, 0] - X_pos[:, f_num, 1]) >= thres2))
 
         if len(pos_indx_at_dist[0])> len(neg_indx_at_dist[0]):
             #print 'more pos than neg'
@@ -353,7 +391,8 @@ def get_pairs_distance_matched(X, y, indx, min_dist, max_dist, dist_step, imbala
     return X_new, y_new, indx_new
 
 def impose_dist_constrains(data, labels, indx, min_dist, max_dist):
-    indx_unlabeled = np.where((abs(data[:, 10, 0] - data[:, 10, 1]) <= max_dist) & (abs(data[:, 10, 0] - data[:, 10, 1]) >= min_dist))
+    f_num = data.shape[1]-1
+    indx_unlabeled = np.where((abs(data[:, f_num, 0] - data[:, f_num, 1]) <= max_dist) & (abs(data[:, f_num, 0] - data[:, f_num, 1]) >= min_dist))
     new_labels=labels[indx_unlabeled]
     new_data=data[indx_unlabeled]
     new_indx=indx[indx_unlabeled]
